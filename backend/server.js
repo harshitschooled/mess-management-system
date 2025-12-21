@@ -12,18 +12,23 @@ const adminMiddleware = require("./middleware/admin");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+/* ================= CORS (CRITICAL FIX) ================= */
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+app.options("*", cors()); // <-- THIS FIXES FAILED FETCH
 
-// ================= MIDDLEWARE =================
-app.use(cors());
 app.use(express.json());
 
-// ================= MONGODB CONNECTION =================
+/* ================= MONGODB ================= */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// ================= AUTH MIDDLEWARE =================
+/* ================= AUTH ================= */
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -42,12 +47,11 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// ================= ROOT =================
+/* ================= ROUTES ================= */
 app.get("/", (req, res) => {
   res.send("Backend running OK");
 });
 
-// ================= REGISTER =================
 app.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -65,7 +69,6 @@ app.post("/register", async (req, res) => {
   res.json({ message: "User registered successfully" });
 });
 
-// ================= LOGIN =================
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -84,7 +87,6 @@ app.post("/login", async (req, res) => {
   res.json({ message: "Login successful", token, role: user.role });
 });
 
-// ================= ATTENDANCE =================
 app.post("/attendance", authMiddleware, async (req, res) => {
   const today = new Date().toISOString().split("T")[0];
 
@@ -93,8 +95,9 @@ app.post("/attendance", authMiddleware, async (req, res) => {
     date: today,
   });
 
-  if (exists)
+  if (exists) {
     return res.status(400).json({ message: "Attendance already marked today" });
+  }
 
   await new Attendance({
     user: req.user.id,
@@ -105,30 +108,21 @@ app.post("/attendance", authMiddleware, async (req, res) => {
   res.json({ message: "Attendance marked", willEat: req.body.willEat });
 });
 
-// ================= ADMIN: DAILY SUMMARY =================
-app.get(
-  "/admin/summary",
-  authMiddleware,
-  adminMiddleware,
-  async (req, res) => {
-    const today = new Date().toISOString().split("T")[0];
+app.get("/admin/summary", authMiddleware, adminMiddleware, async (req, res) => {
+  const today = new Date().toISOString().split("T")[0];
 
-    const total = await Attendance.countDocuments({ date: today });
-    const eating = await Attendance.countDocuments({
-      date: today,
-      willEat: true,
-    });
+  const total = await Attendance.countDocuments({ date: today });
+  const eating = await Attendance.countDocuments({ date: today, willEat: true });
 
-    res.json({
-      date: today,
-      totalStudentsResponded: total,
-      studentsEating: eating,
-      studentsNotEating: total - eating,
-    });
-  }
-);
+  res.json({
+    date: today,
+    totalStudentsResponded: total,
+    studentsEating: eating,
+    studentsNotEating: total - eating,
+  });
+});
 
-// ================= START SERVER =================
+/* ================= START ================= */
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
