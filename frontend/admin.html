@@ -1,18 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin | Mess</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<h3>Admin Dashboard</h3>
+<nav class="navbar">
+  <div class="logo">🍽️ Admin Panel</div>
+  <button onclick="logout()">Logout</button>
+</nav>
 
-<textarea id="ingredients" placeholder="Enter ingredients"></textarea><br><br>
-<input type="number" id="students" placeholder="Student count"><br><br>
+<div class="container">
+  <div class="card">
+    <h2>📊 Today’s Summary</h2>
+    <button onclick="getSummary()">📥 Load Data</button>
 
-<button onclick="getRecipe()">Get Recipe</button>
-
-<pre id="result"></pre>
+    <div id="summary"></div>
+  </div>
+</div>
 
 <script src="script.js"></script>
 </body>

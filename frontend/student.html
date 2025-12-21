@@ -1,16 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Student Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student | Mess</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<h3>Student Dashboard</h3>
+<nav class="navbar">
+  <div class="logo">🍽️ College Mess</div>
+  <button onclick="logout()">Logout</button>
+</nav>
 
-<p>Will you eat today?</p>
+<div class="container">
+  <div class="card">
+    <h2>🍱 Today’s Attendance</h2>
 
-<button onclick="markMeal(true)">Yes</button>
-<button onclick="markMeal(false)">No</button>
+    <button class="yes" onclick="markAttendance(true)">✅ Will Eat</button>
+    <button class="no" onclick="markAttendance(false)">❌ Will Not Eat</button>
+
+    <p id="msg"></p>
+  </div>
+</div>
 
 <script src="script.js"></script>
 </body>

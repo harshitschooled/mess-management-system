@@ -1,69 +1,89 @@
-let token = "";
-let role = "";
+const API_URL = "https://mess-management-backend-karn.onrender.com";
 
+// ---------------- LOGIN ----------------
 async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  const msg = document.getElementById("msg");
 
-  const res = await fetch("http://localhost:5000/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+  try {
+    const res = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (!data.token) {
-    alert("Login failed");
-    return;
-  }
-
-  token = data.token;
-  role = data.role;
-
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("userRole").textContent =
-    role === "admin" ? "Admin" : "Student";
-
-  if (role === "student") {
-    document.getElementById("studentBox").classList.remove("hidden");
-  } else {
-    document.getElementById("adminBox").classList.remove("hidden");
-  }
-}
-
-async function markAttendance(willEat) {
-  const res = await fetch("http://localhost:5000/attendance", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token
-    },
-    body: JSON.stringify({ willEat }),
-  });
-
-  const data = await res.json();
-  alert(data.message);
-}
-
-async function loadSummary() {
-  const res = await fetch("http://localhost:5000/admin/summary", {
-    headers: {
-      "Authorization": "Bearer " + token
+    if (!res.ok) {
+      msg.innerText = data.message;
+      return;
     }
-  });
 
-  const data = await res.json();
-  document.getElementById("summary").textContent =
-    JSON.stringify(data, null, 2);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role);
+
+    if (data.role === "admin") {
+      window.location.href = "admin.html";
+    } else {
+      window.location.href = "student.html";
+    }
+
+  } catch (err) {
+    msg.innerText = "Server error";
+  }
 }
 
-function logout() {
-  token = "";
-  role = "";
+// ---------------- STUDENT ----------------
+async function markAttendance(willEat) {
+  const token = localStorage.getItem("token");
+  const msg = document.getElementById("msg");
 
-  document.getElementById("loginBox").classList.remove("hidden");
-  document.getElementById("studentBox").classList.add("hidden");
-  document.getElementById("adminBox").classList.add("hidden");
-  document.getElementById("userRole").textContent = "Not logged in";
+  try {
+    const res = await fetch(`${API_URL}/attendance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ willEat })
+    });
+
+    const data = await res.json();
+    msg.innerText = data.message;
+
+  } catch {
+    msg.innerText = "Error submitting attendance";
+  }
+}
+
+// ---------------- ADMIN ----------------
+async function getSummary() {
+  const token = localStorage.getItem("token");
+  const box = document.getElementById("summary");
+
+  try {
+    const res = await fetch(`${API_URL}/admin/summary`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+
+    box.innerHTML = `
+      <p><b>Date:</b> ${data.date}</p>
+      <p><b>Total:</b> ${data.totalStudentsResponded}</p>
+      <p><b>Eating:</b> ${data.studentsEating}</p>
+      <p><b>Not Eating:</b> ${data.studentsNotEating}</p>
+    `;
+  } catch {
+    box.innerText = "Failed to load data";
+  }
+}
+
+// ---------------- LOGOUT ----------------
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
 }
