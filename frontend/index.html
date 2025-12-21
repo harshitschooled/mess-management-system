@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>College Mess Management</title>
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <i class="fa-solid fa-utensils"></i>
+      <span class="brand">College Mess</span>
+    </div>
+
+    <div class="nav-right">
+      <i class="fa-solid fa-user"></i>
+      <span id="userRole">Not logged in</span>
+      <button class="logout" onclick="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="container">
+
+    <!-- LOGIN -->
+    <div id="loginBox" class="card">
+      <h2><i class="fa-solid fa-lock"></i> Login</h2>
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button onclick="login()">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+      </button>
+    </div>
+
+    <!-- STUDENT -->
+    <div id="studentBox" class="card hidden">
+      <h2><i class="fa-solid fa-user-graduate"></i> Student Panel</h2>
+      <p>Mark your mess attendance for today</p>
+      <button class="success" onclick="markAttendance(true)">
+        <i class="fa-solid fa-check"></i> I Will Eat
+      </button>
+      <button class="danger" onclick="markAttendance(false)">
+        <i class="fa-solid fa-xmark"></i> I Will NOT Eat
+      </button>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="adminBox" class="card hidden">
+      <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
+      <button onclick="loadSummary()">
+        <i class="fa-solid fa-chart-column"></i> Load Today Summary
+      </button>
+      <pre id="summary"></pre>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
