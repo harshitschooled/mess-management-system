@@ -1,6 +1,6 @@
 const API_URL = "https://mess-management-backend-karn.onrender.com";
 
-// ---------------- LOGIN ----------------
+/* ================= LOGIN ================= */
 async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -14,27 +14,50 @@ async function login() {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      msg.innerText = data.message;
-      return;
-    }
+    if (!res.ok) return msg.innerText = data.message;
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.role);
 
-    if (data.role === "admin") {
-      window.location.href = "admin.html";
-    } else {
-      window.location.href = "student.html";
-    }
+    window.location.href =
+      data.role === "admin" ? "admin.html" : "student.html";
 
-  } catch (err) {
-    msg.innerText = "Server error";
+  } catch {
+    msg.innerText = "Backend not reachable";
   }
 }
 
-// ---------------- STUDENT ----------------
+/* ================= ADMIN ADD USER ================= */
+async function addUser() {
+  const token = localStorage.getItem("token");
+  const msg = document.getElementById("msg");
+
+  const body = {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    role: document.getElementById("role").value
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    msg.innerText = data.message;
+
+  } catch {
+    msg.innerText = "Failed to add user";
+  }
+}
+
+/* ================= STUDENT ATTENDANCE ================= */
 async function markAttendance(willEat) {
   const token = localStorage.getItem("token");
   const msg = document.getElementById("msg");
@@ -53,36 +76,29 @@ async function markAttendance(willEat) {
     msg.innerText = data.message;
 
   } catch {
-    msg.innerText = "Error submitting attendance";
+    msg.innerText = "Attendance failed";
   }
 }
 
-// ---------------- ADMIN ----------------
+/* ================= ADMIN SUMMARY ================= */
 async function getSummary() {
   const token = localStorage.getItem("token");
   const box = document.getElementById("summary");
 
-  try {
-    const res = await fetch(`${API_URL}/admin/summary`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
+  const res = await fetch(`${API_URL}/admin/summary`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
 
-    const data = await res.json();
-
-    box.innerHTML = `
-      <p><b>Date:</b> ${data.date}</p>
-      <p><b>Total:</b> ${data.totalStudentsResponded}</p>
-      <p><b>Eating:</b> ${data.studentsEating}</p>
-      <p><b>Not Eating:</b> ${data.studentsNotEating}</p>
-    `;
-  } catch {
-    box.innerText = "Failed to load data";
-  }
+  const d = await res.json();
+  box.innerHTML = `
+    <p>Date: ${d.date}</p>
+    <p>Total: ${d.totalStudentsResponded}</p>
+    <p>Eating: ${d.studentsEating}</p>
+    <p>Not Eating: ${d.studentsNotEating}</p>
+  `;
 }
 
-// ---------------- LOGOUT ----------------
+/* ================= LOGOUT ================= */
 function logout() {
   localStorage.clear();
   window.location.href = "index.html";
